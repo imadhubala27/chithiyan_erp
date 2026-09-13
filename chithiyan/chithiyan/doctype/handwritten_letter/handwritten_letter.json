@@ -1,0 +1,167 @@
+{
+  "actions": [],
+  "allow_rename": 1,
+  "autoname": "LET-.#####",
+  "creation": "2026-09-13 18:56:34.975271",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "section_break_sender",
+    "sender_full_name",
+    "signature_style",
+    "section_break_recipient",
+    "recipient_full_name",
+    "salutation",
+    "letter_intention",
+    "column_break_recipient_1",
+    "flat_house_no_building",
+    "street_locality_details",
+    "pincode",
+    "recipient_phone",
+    "city",
+    "state",
+    "section_break_letter",
+    "letter_message",
+    "section_break_system",
+    "customer",
+    "current_step"
+  ],
+  "fields": [
+    {
+      "fieldname": "section_break_sender",
+      "fieldtype": "Section Break",
+      "label": "Sender Details"
+    },
+    {
+      "fieldname": "sender_full_name",
+      "fieldtype": "Data",
+      "label": "Sender Full Name",
+      "reqd": 1
+    },
+    {
+      "fieldname": "signature_style",
+      "fieldtype": "Select",
+      "label": "Sign-off Signature Style",
+      "options": "Warm regards,\nSincerely,\nYours lovingly,\nWith love,\nBest wishes,",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_break_recipient",
+      "fieldtype": "Section Break",
+      "label": "Recipient Details"
+    },
+    {
+      "fieldname": "recipient_full_name",
+      "fieldtype": "Data",
+      "label": "Recipient Full Name",
+      "reqd": 1
+    },
+    {
+      "fieldname": "salutation",
+      "fieldtype": "Data",
+      "label": "Salutation",
+      "reqd": 1
+    },
+    {
+      "fieldname": "letter_intention",
+      "fieldtype": "Data",
+      "label": "Letter Intention"
+    },
+    {
+      "fieldname": "column_break_recipient_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "flat_house_no_building",
+      "fieldtype": "Data",
+      "label": "Flat, House No, Building",
+      "reqd": 1
+    },
+    {
+      "fieldname": "street_locality_details",
+      "fieldtype": "Data",
+      "label": "Street, Locality Details",
+      "reqd": 1
+    },
+    {
+      "fieldname": "pincode",
+      "fieldtype": "Data",
+      "label": "Pincode",
+      "reqd": 1
+    },
+    {
+      "fieldname": "recipient_phone",
+      "fieldtype": "Data",
+      "label": "Recipient Phone",
+      "reqd": 1
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": 1
+    },
+    {
+      "fieldname": "state",
+      "fieldtype": "Data",
+      "label": "State",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_break_letter",
+      "fieldtype": "Section Break",
+      "label": "Letter Content"
+    },
+    {
+      "fieldname": "letter_message",
+      "fieldtype": "Long Text",
+      "label": "Letter Message",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_break_system",
+      "fieldtype": "Section Break",
+      "label": "System Details"
+    },
+    {
+      "fieldname": "customer",
+      "fieldtype": "Link",
+      "label": "Customer",
+      "options": "User"
+    },
+    {
+      "fieldname": "current_step",
+      "fieldtype": "Select",
+      "label": "Current Step",
+      "options": "From\nTo\nWrite\nPresent\nReview",
+      "default": "From"
+    }
+  ],
+  "grid_page_length": 50,
+  "index_web_pages_for_search": 1,
+  "links": [],
+  "modified": "2026-09-13 18:56:34.975271",
+  "modified_by": "Administrator",
+  "module": "chithiyan",
+  "name": "Handwritten Letter",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "row_format": "Dynamic",
+  "rows_threshold_for_grid_search": 20,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": []
+}

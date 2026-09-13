@@ -1,0 +1,146 @@
+{
+  "actions": [],
+  "allow_rename": 1,
+  "creation": "2026-09-13 20:07:39.159963",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+
+  "field_order": [
+    "section_break_ia0n",
+    "first_name",
+    "last_name",
+    "email",
+    "mobile_phone",
+    "address",
+    "city",
+    "country",
+    "shipping_method",
+    "company",
+    "designation",
+    "website",
+    "products_dealing_in",
+    "status",
+    "user"
+  ],
+
+  "fields": [
+    {
+      "fieldname": "section_break_ia0n",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "first_name",
+      "fieldtype": "Data",
+      "label": "First Name",
+      "reqd": 1
+    },
+    {
+      "fieldname": "last_name",
+      "fieldtype": "Data",
+      "label": "Last Name",
+      "reqd": 1
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "reqd": 1
+    },
+    {
+      "fieldname": "mobile_phone",
+      "fieldtype": "Data",
+      "label": "Mobile Phone",
+      "reqd": 1
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "Small Text",
+      "label": "Address",
+      "reqd": 1
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": 1
+    },
+    {
+      "fieldname": "country",
+      "fieldtype": "Data",
+      "label": "Country",
+      "default": "India",
+      "reqd": 1
+    },
+    {
+      "fieldname": "shipping_method",
+      "fieldtype": "Select",
+      "label": "Shipping Method",
+      "options": "Giftcart.com delivery\nLocal Tricity Courier\nNational Surface Cargo\nSelf-Shipment by Merchant"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Data",
+      "label": "Company"
+    },
+    {
+      "fieldname": "designation",
+      "fieldtype": "Data",
+      "label": "Designation"
+    },
+    {
+      "fieldname": "website",
+      "fieldtype": "Data",
+      "label": "Website"
+    },
+    {
+      "fieldname": "products_dealing_in",
+      "fieldtype": "Small Text",
+      "label": "Products Dealing-In",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "Pending\nApproved\nRejected",
+      "default": "Pending",
+      "reqd": 1
+    },
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "label": "User",
+      "options": "User"
+    }
+  ],
+
+  "grid_page_length": 50,
+  "index_web_pages_for_search": 1,
+  "links": [],
+  "modified": "2026-09-13 20:07:39.159963",
+  "modified_by": "Administrator",
+  "module": "chithiyan",
+  "name": "Vendor Registration",
+  "owner": "Administrator",
+
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+
+  "row_format": "Dynamic",
+  "rows_threshold_for_grid_search": 20,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": []
+}
