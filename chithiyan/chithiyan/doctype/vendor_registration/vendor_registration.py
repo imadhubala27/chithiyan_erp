@@ -39,7 +39,9 @@ def create_vendor_registration(
 
     for field_label, value in required_fields.items():
         if not value or not str(value).strip():
-            frappe.throw(f"{field_label} is required")
+            frappe.throw(
+                f"{field_label} is required"
+            )
 
     # ---------------------------------
     # Create Vendor Registration
@@ -64,7 +66,9 @@ def create_vendor_registration(
         }
     )
 
-    vendor_registration.insert(ignore_permissions=True)
+    vendor_registration.insert(
+        ignore_permissions=True
+    )
 
     frappe.db.commit()
 
@@ -119,7 +123,9 @@ def create_supplier(vendor_registration):
     # Full Name
     # ---------------------------------
 
-    full_name = f"{vendor.first_name} {vendor.last_name}".strip()
+    full_name = (
+        f"{vendor.first_name} {vendor.last_name}"
+    ).strip()
 
     supplier_name = vendor.company or full_name
 
@@ -164,7 +170,9 @@ def create_supplier(vendor_registration):
         }
     )
 
-    supplier.insert(ignore_permissions=True)
+    supplier.insert(
+        ignore_permissions=True
+    )
 
     # ---------------------------------
     # CREATE CONTACT
@@ -180,7 +188,10 @@ def create_supplier(vendor_registration):
         }
     )
 
-    # Email
+    # ---------------------------------
+    # Contact Email
+    # ---------------------------------
+
     contact.append(
         "email_ids",
         {
@@ -189,7 +200,10 @@ def create_supplier(vendor_registration):
         }
     )
 
-    # Mobile
+    # ---------------------------------
+    # Contact Mobile
+    # ---------------------------------
+
     contact.append(
         "phone_nos",
         {
@@ -198,7 +212,10 @@ def create_supplier(vendor_registration):
         }
     )
 
+    # ---------------------------------
     # Link Contact with Supplier
+    # ---------------------------------
+
     contact.append(
         "links",
         {
@@ -207,7 +224,9 @@ def create_supplier(vendor_registration):
         }
     )
 
-    contact.insert(ignore_permissions=True)
+    contact.insert(
+        ignore_permissions=True
+    )
 
     # ---------------------------------
     # CREATE ADDRESS
@@ -226,7 +245,16 @@ def create_supplier(vendor_registration):
         }
     )
 
+    # ---------------------------------
+    # ERPNext Address Validation
+    # ---------------------------------
+
+    address.is_your_company_address = 0
+
+    # ---------------------------------
     # Link Address with Supplier
+    # ---------------------------------
+
     address.append(
         "links",
         {
@@ -235,68 +263,95 @@ def create_supplier(vendor_registration):
         }
     )
 
-    address.insert(ignore_permissions=True)
+    address.insert(
+        ignore_permissions=True
+    )
 
+    # ---------------------------------
+    # CREATE USER
+    # ---------------------------------
 
-	user_name = vendor.email.strip().lower()
+    user_name = vendor.email.strip().lower()
 
-	existing_user = frappe.db.exists(
-		"User",
-		user_name
-	)
+    existing_user = frappe.db.exists(
+        "User",
+        user_name
+    )
 
-	if existing_user:
-		# ---------------------------------
-		# Existing User
-		# ---------------------------------
+    if existing_user:
+        # ---------------------------------
+        # Existing User
+        # ---------------------------------
 
-		user = frappe.get_doc(
-			"User",
-			user_name
-		)
+        user = frappe.get_doc(
+            "User",
+            user_name
+        )
 
-	else:
-		# ---------------------------------
-		# New User
-		# ---------------------------------
+    else:
+        # ---------------------------------
+        # New User
+        # ---------------------------------
 
-		generated_password = random_string(12)
+        generated_password = random_string(12)
 
-		user = frappe.get_doc(
-			{
-				"doctype": "User",
-				"email": user_name,
-				"first_name": vendor.first_name,
-				"last_name": vendor.last_name,
-				"mobile_no": vendor.mobile_phone,
-				"user_type": "Website User",
-				"enabled": 1,
-				"send_welcome_email": 1,
-				"new_password": generated_password,
-			}
-		)
+        user = frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": user_name,
+                "first_name": vendor.first_name,
+                "last_name": vendor.last_name,
+                "mobile_no": vendor.mobile_phone,
+                "user_type": "Website User",
+                "enabled": 1,
+                "send_welcome_email": 1,
+                "new_password": generated_password,
+            }
+        )
 
-		user.insert(ignore_permissions=True)
+        user.insert(
+            ignore_permissions=True
+        )
 
+    # ---------------------------------
+    # ADD SUPPLIER ROLE
+    # ---------------------------------
 
-	# ---------------------------------
-	# ADD ONLY SUPPLIER ROLE
-	# ---------------------------------
+    has_supplier_role = any(
+        role.role == "Supplier"
+        for role in user.roles
+    )
 
-	has_supplier_role = any(
-		role.role == "Supplier"
-		for role in user.roles
-	)
+    if not has_supplier_role:
+        user.append(
+            "roles",
+            {
+                "role": "Supplier"
+            }
+        )
 
-	if not has_supplier_role:
-		user.append(
-			"roles",
-			{
-				"role": "Supplier"
-			}
-		)
+        user.save(
+            ignore_permissions=True
+        )
 
-		user.save(ignore_permissions=True)
+    # ---------------------------------
+    # UPDATE VENDOR REGISTRATION
+    # ---------------------------------
+
+    vendor.supplier = supplier.name
+    vendor.contact = contact.name
+    vendor.address_link = address.name
+    vendor.user = user.name
+    vendor.status = "Approved"
+
+    vendor.save(
+        ignore_permissions=True
+    )
+
+    # ---------------------------------
+    # COMMIT
+    # ---------------------------------
+
     frappe.db.commit()
 
     # ---------------------------------

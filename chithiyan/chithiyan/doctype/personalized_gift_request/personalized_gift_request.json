@@ -1,0 +1,155 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PGR-.#####",
+ "creation": "2026-09-20 17:13:30.729534",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_uy7m",
+  "full_name",
+  "email_address",
+  "mobile_number",
+  "whatsapp_number",
+  "city",
+  "state",
+  "pincode",
+  "preferred_contact_method",
+  "column_break_frxm",
+  "occasion",
+  "budget",
+  "gift_type",
+  "delivery_date",
+  "detailed_custom_request",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_uy7m",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mobile_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Mobile Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "whatsapp_number",
+   "fieldtype": "Data",
+   "label": "WhatsApp Number"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "City",
+   "reqd": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pincode",
+   "fieldtype": "Data",
+   "label": "Pincode",
+   "reqd": 1
+  },
+  {
+   "fieldname": "occasion",
+   "fieldtype": "Data",
+   "label": "Occasion"
+  },
+  {
+   "fieldname": "budget",
+   "fieldtype": "Select",
+   "label": "Budget",
+   "options": "Under \u20b91,500\n\u20b91,500 - \u20b93,000\n\u20b93,000 - \u20b95,000\nAbove \u20b95,000"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "default": "WhatsApp",
+   "fieldname": "preferred_contact_method",
+   "fieldtype": "Select",
+   "label": "Preferred Contact Method",
+   "options": "WhatsApp\nPhone\nEmail"
+  },
+  {
+   "fieldname": "gift_type",
+   "fieldtype": "Data",
+   "label": "Gift Type"
+  },
+  {
+   "fieldname": "detailed_custom_request",
+   "fieldtype": "Long Text",
+   "label": "Detailed Custom Request",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Personalized Gift Request",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_frxm",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-09-20 17:35:18.202484",
+ "modified_by": "Administrator",
+ "module": "chithiyan",
+ "name": "Personalized Gift Request",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
