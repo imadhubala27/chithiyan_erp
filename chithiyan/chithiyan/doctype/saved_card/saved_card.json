@@ -1,0 +1,49 @@
+{
+  "actions": [],
+  "allow_rename": 1,
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "card_number",
+    "card_name",
+    "expiry",
+    "holder"
+  ],
+  "fields": [
+    {
+      "fieldname": "card_number",
+      "fieldtype": "Data",
+      "label": "Card Number",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "card_name",
+      "fieldtype": "Data",
+      "label": "Card Name",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "expiry",
+      "fieldtype": "Data",
+      "label": "Expiry",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "holder",
+      "fieldtype": "Data",
+      "label": "Card Holder",
+      "in_list_view": 1
+    }
+  ],
+  "grid_page_length": 50,
+  "index_web_pages_for_search": 1,
+  "links": [],
+  "modified": "2026-09-23 21:20:00.000000",
+  "modified_by": "Administrator",
+  "module": "chithiyan",
+  "name": "Saved Card",
+  "owner": "Administrator",
+  "permissions": [],
+  "istable": 1,
+  "row_format": "Dynamic"
+}
