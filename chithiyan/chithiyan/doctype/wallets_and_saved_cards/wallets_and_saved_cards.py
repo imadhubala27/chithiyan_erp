@@ -6,37 +6,47 @@ from frappe.model.document import Document
 
 
 class WalletsandSavedCards(Document):
-	pass
+    pass
 
 
+# ==========================================================
+# CURRENT USER
+# ==========================================================
 
-def _get_wallet_name():
-    """
-    One Wallets and Saved Cards document per logged-in user.
-    """
-    if not frappe.session.user or frappe.session.user == "Guest":
+def _get_current_user():
+    user = frappe.session.user
+
+    if not user or user == "Guest":
         frappe.throw("Please login first.")
 
-    return frappe.session.user
+    return user
 
+
+# ==========================================================
+# GET / CREATE WALLET
+# ==========================================================
 
 def _get_or_create_wallet():
-    wallet_name = _get_wallet_name()
+    user = _get_current_user()
 
-    if frappe.db.exists(
+    # Find wallet by document owner
+    wallet_name = frappe.db.get_value(
         "Wallets and Saved Cards",
-        wallet_name,
-    ):
+        {"owner": user},
+        "name",
+    )
+
+    if wallet_name:
         return frappe.get_doc(
             "Wallets and Saved Cards",
             wallet_name,
         )
 
+    # Create new wallet
     wallet = frappe.new_doc(
         "Wallets and Saved Cards"
     )
 
-    wallet.name = wallet_name
     wallet.wallet_balance = 0
     wallet.wallet_active = 0
 
@@ -45,6 +55,29 @@ def _get_or_create_wallet():
     )
 
     return wallet
+
+
+# ==========================================================
+# HELPERS
+# ==========================================================
+
+def _parse_list(value):
+    if not value:
+        return []
+
+    return [
+        item.strip()
+        for item in value.split(",")
+        if item.strip()
+    ]
+
+
+def _join_list(items):
+    return ", ".join(
+        item.strip()
+        for item in items
+        if item and item.strip()
+    )
 
 
 # ==========================================================
@@ -67,31 +100,21 @@ def get_wallet():
             "holder": card.holder or "",
         })
 
-    upis = []
-
-    if wallet.saved_upis:
-        upis = [
-            item.strip()
-            for item in wallet.saved_upis.split(",")
-            if item.strip()
-        ]
-
-    paypals = []
-
-    if wallet.saved_paypals:
-        paypals = [
-            item.strip()
-            for item in wallet.saved_paypals.split(",")
-            if item.strip()
-        ]
-
     return {
         "id": wallet.name,
-        "walletBalance": wallet.wallet_balance or 0,
-        "walletActive": bool(wallet.wallet_active),
+        "walletBalance": float(
+            wallet.wallet_balance or 0
+        ),
+        "walletActive": bool(
+            wallet.wallet_active
+        ),
         "savedCards": cards,
-        "savedUpis": upis,
-        "savedPaypals": paypals,
+        "savedUpis": _parse_list(
+            wallet.saved_upis
+        ),
+        "savedPaypals": _parse_list(
+            wallet.saved_paypals
+        ),
     }
 
 
@@ -111,9 +134,12 @@ def update_wallet_balance(amount):
             "Amount must be greater than zero."
         )
 
+    current_balance = frappe.utils.flt(
+        wallet.wallet_balance
+    )
+
     wallet.wallet_balance = (
-        frappe.utils.flt(wallet.wallet_balance)
-        + amount
+        current_balance + amount
     )
 
     wallet.save(
@@ -123,7 +149,9 @@ def update_wallet_balance(amount):
     frappe.db.commit()
 
     return {
-        "walletBalance": wallet.wallet_balance
+        "walletBalance": float(
+            wallet.wallet_balance
+        )
     }
 
 
@@ -163,10 +191,21 @@ def add_card(
 
     wallet = _get_or_create_wallet()
 
-    card_number = (card_number or "").strip()
-    card_name = (card_name or "").strip()
-    expiry = (expiry or "").strip()
-    holder = (holder or "").strip()
+    card_number = (
+        card_number or ""
+    ).strip()
+
+    card_name = (
+        card_name or ""
+    ).strip()
+
+    expiry = (
+        expiry or ""
+    ).strip()
+
+    holder = (
+        holder or ""
+    ).strip()
 
     if not card_number:
         frappe.throw(
@@ -181,6 +220,19 @@ def add_card(
     if not holder:
         frappe.throw(
             "Card holder is required."
+        )
+
+    # Never store an unmasked card number
+    digits = "".join(
+        char
+        for char in card_number
+        if char.isdigit()
+    )
+
+    if len(digits) == 16:
+        card_number = (
+            "**** **** **** "
+            + digits[-4:]
         )
 
     card = wallet.append(
@@ -223,30 +275,43 @@ def update_card(
 
     wallet = _get_or_create_wallet()
 
-    card = None
-
-    for row in wallet.saved_cards or []:
-        if row.name == card_id:
-            card = row
-            break
+    card = next(
+        (
+            row
+            for row in wallet.saved_cards or []
+            if row.name == card_id
+        ),
+        None,
+    )
 
     if not card:
         frappe.throw(
             "Saved card not found."
         )
 
-    card.card_number = (
+    card_number = (
         card_number or ""
     ).strip()
 
+    digits = "".join(
+        char
+        for char in card_number
+        if char.isdigit()
+    )
+
+    if len(digits) == 16:
+        card_number = (
+            "**** **** **** "
+            + digits[-4:]
+        )
+
+    card.card_number = card_number
     card.card_name = (
         card_name or ""
     ).strip()
-
     card.expiry = (
         expiry or ""
     ).strip()
-
     card.holder = (
         holder or ""
     ).strip()
@@ -275,12 +340,14 @@ def delete_card(card_id):
 
     wallet = _get_or_create_wallet()
 
-    card = None
-
-    for row in wallet.saved_cards or []:
-        if row.name == card_id:
-            card = row
-            break
+    card = next(
+        (
+            row
+            for row in wallet.saved_cards or []
+            if row.name == card_id
+        ),
+        None,
+    )
 
     if not card:
         frappe.throw(
@@ -310,26 +377,25 @@ def save_upi(upi):
 
     wallet = _get_or_create_wallet()
 
-    upi = (upi or "").strip()
+    upi = (
+        upi or ""
+    ).strip().lower()
 
     if not upi:
         frappe.throw(
             "UPI ID is required."
         )
 
-    existing = []
-
-    if wallet.saved_upis:
-        existing = [
-            item.strip()
-            for item in wallet.saved_upis.split(",")
-            if item.strip()
-        ]
+    existing = _parse_list(
+        wallet.saved_upis
+    )
 
     if upi not in existing:
         existing.append(upi)
 
-    wallet.saved_upis = ", ".join(existing)
+    wallet.saved_upis = _join_list(
+        existing
+    )
 
     wallet.save(
         ignore_permissions=True
@@ -351,24 +417,23 @@ def delete_upi(upi):
 
     wallet = _get_or_create_wallet()
 
-    upi = (upi or "").strip()
+    upi = (
+        upi or ""
+    ).strip().lower()
 
-    existing = []
-
-    if wallet.saved_upis:
-        existing = [
-            item.strip()
-            for item in wallet.saved_upis.split(",")
-            if item.strip()
-        ]
+    existing = _parse_list(
+        wallet.saved_upis
+    )
 
     existing = [
         item
         for item in existing
-        if item != upi
+        if item.lower() != upi
     ]
 
-    wallet.saved_upis = ", ".join(existing)
+    wallet.saved_upis = _join_list(
+        existing
+    )
 
     wallet.save(
         ignore_permissions=True
@@ -390,26 +455,25 @@ def save_paypal(email):
 
     wallet = _get_or_create_wallet()
 
-    email = (email or "").strip()
+    email = (
+        email or ""
+    ).strip().lower()
 
     if not email:
         frappe.throw(
             "PayPal email is required."
         )
 
-    existing = []
-
-    if wallet.saved_paypals:
-        existing = [
-            item.strip()
-            for item in wallet.saved_paypals.split(",")
-            if item.strip()
-        ]
+    existing = _parse_list(
+        wallet.saved_paypals
+    )
 
     if email not in existing:
         existing.append(email)
 
-    wallet.saved_paypals = ", ".join(existing)
+    wallet.saved_paypals = _join_list(
+        existing
+    )
 
     wallet.save(
         ignore_permissions=True
@@ -431,24 +495,23 @@ def delete_paypal(email):
 
     wallet = _get_or_create_wallet()
 
-    email = (email or "").strip()
+    email = (
+        email or ""
+    ).strip().lower()
 
-    existing = []
-
-    if wallet.saved_paypals:
-        existing = [
-            item.strip()
-            for item in wallet.saved_paypals.split(",")
-            if item.strip()
-        ]
+    existing = _parse_list(
+        wallet.saved_paypals
+    )
 
     existing = [
         item
         for item in existing
-        if item != email
+        if item.lower() != email
     ]
 
-    wallet.saved_paypals = ", ".join(existing)
+    wallet.saved_paypals = _join_list(
+        existing
+    )
 
     wallet.save(
         ignore_permissions=True
