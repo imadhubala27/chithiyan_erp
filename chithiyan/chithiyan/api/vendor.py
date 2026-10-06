@@ -1,7 +1,8 @@
 import frappe
 from frappe import _
 
-@frappe.whitelist(methods=["POST"])
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def create_vendor_lead(
     company_name=None,
     contact_person=None,
@@ -9,13 +10,17 @@ def create_vendor_lead(
     mobile=None,
     description=None,
 ):
+    """
+    Create a partnership/vendor lead without requiring login.
+    """
+
     # ---------------------------------------------------------
     # CLEAN DATA
     # ---------------------------------------------------------
 
     company_name = (company_name or "").strip()
     contact_person = (contact_person or "").strip()
-    email = (email or "").strip()
+    email = (email or "").strip().lower()
     mobile = (mobile or "").strip()
     description = (description or "").strip()
 
@@ -24,29 +29,19 @@ def create_vendor_lead(
     # ---------------------------------------------------------
 
     if not company_name:
-        frappe.throw(
-            _("Company / Brand Name is required.")
-        )
+        frappe.throw(_("Company / Brand Name is required."))
 
     if not contact_person:
-        frappe.throw(
-            _("Contact Person Name is required.")
-        )
+        frappe.throw(_("Contact Person Name is required."))
 
     if not email:
-        frappe.throw(
-            _("Email Address is required.")
-        )
+        frappe.throw(_("Email Address is required."))
 
     if not mobile:
-        frappe.throw(
-            _("Mobile Phone is required.")
-        )
+        frappe.throw(_("Mobile Phone is required."))
 
     if not description:
-        frappe.throw(
-            _("Product / Service description is required.")
-        )
+        frappe.throw(_("Product / Service description is required."))
 
     # ---------------------------------------------------------
     # CHECK EXISTING LEAD
@@ -74,40 +69,30 @@ def create_vendor_lead(
     # CREATE LEAD
     # ---------------------------------------------------------
 
-    lead = frappe.get_doc(
-        {
-            "doctype": "Lead",
-
-            "lead_name": contact_person,
-
-            "company_name": company_name,
-
-            "email_id": email,
-
-            "mobile_no": mobile,
-
-        }
-    )
+    lead = frappe.get_doc({
+        "doctype": "Lead",
+        "lead_name": contact_person,
+        "company_name": company_name,
+        "email_id": email,
+        "mobile_no": mobile,
+    })
 
     # ---------------------------------------------------------
     # ADD DESCRIPTION TO LEAD NOTES
     # ---------------------------------------------------------
 
-    if description:
-        lead.append(
-            "notes",
-            {
-                "note": description,
-            },
-        )
-
-    # ---------------------------------------------------------
-    # INSERT
-    # ---------------------------------------------------------
-
-    lead.insert(
-        ignore_permissions=True
+    lead.append(
+        "notes",
+        {
+            "note": description,
+        },
     )
+
+    # ---------------------------------------------------------
+    # INSERT LEAD
+    # ---------------------------------------------------------
+
+    lead.insert(ignore_permissions=True)
 
     frappe.db.commit()
 
@@ -117,12 +102,9 @@ def create_vendor_lead(
 
     return {
         "success": True,
-
         "existing": False,
-
         "message": (
             "Partnership request submitted successfully."
         ),
-
         "lead": lead.name,
     }
