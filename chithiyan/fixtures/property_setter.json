@@ -1,0 +1,18 @@
+[
+ {
+  "default_value": null,
+  "doc_type": "Quotation",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "order_type",
+  "is_system_generated": 0,
+  "modified": "2026-10-07 21:05:59.816315",
+  "module": "chithiyan",
+  "name": "Quotation-order_type-Select",
+  "property": "options",
+  "property_type": "Text",
+  "row_name": null,
+  "value": "\nSales\nMaintenance\nShopping Cart\nWishlist"
+ }
+]
