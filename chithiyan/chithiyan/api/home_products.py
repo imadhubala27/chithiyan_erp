@@ -91,3 +91,41 @@ def get_new_arrivals(limit=4):
     )
 
     return _build_products(codes)
+
+@frappe.whitelist(allow_guest=True)
+def get_related_products(item_code, limit=4):
+    """Parent Item Group (aur uske saare child groups) ke doosre items."""
+    limit = _clamp_limit(limit, 4)
+
+    item_group = frappe.db.get_value("Item", item_code, "item_group")
+    if not item_group:
+        return []
+
+    parent_group = frappe.db.get_value("Item Group", item_group, "parent_item_group")
+
+    # Parent na ho ya root ("All Item Groups") ho to item ka apna group use karo
+    if not parent_group or parent_group == "All Item Groups":
+        parent_group = item_group
+
+    # Parent ke andar ke saare groups (child + nested) nested-set se
+    lft, rgt = frappe.db.get_value("Item Group", parent_group, ["lft", "rgt"])
+    groups = frappe.get_all(
+        "Item Group",
+        filters={"lft": [">=", lft], "rgt": ["<=", rgt]},
+        pluck="name",
+    )
+
+    codes = frappe.get_all(
+        "Item",
+        filters={
+            "item_group": ["in", groups],
+            "name": ["!=", item_code],
+            "disabled": 0,
+            "is_sales_item": 1,
+        },
+        order_by="creation desc",
+        limit_page_length=limit,
+        pluck="name",
+    )
+
+    return _build_products(codes)
