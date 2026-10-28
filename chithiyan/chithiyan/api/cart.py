@@ -2,7 +2,7 @@ import frappe
 
 from chithiyan.chithiyan.api.quotations import (
     CART,
-    add_item,
+    add_to_cart_item,
     get_customer,
     get_open_doc,
     remove_item,
@@ -38,7 +38,7 @@ def get_cart():
 @frappe.whitelist()
 def add_to_cart(item_code, qty=1):
     customer = get_customer()
-    doc, created = add_item(customer, CART, item_code, qty, accumulate=True)
+    doc, created = add_to_cart_item(customer, item_code, qty)
 
     row = next((i for i in doc.items if i.item_code == item_code), None)
     return {

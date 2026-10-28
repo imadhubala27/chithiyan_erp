@@ -26,6 +26,9 @@ def get_item_code(cart_item_id):
     return str(cart_item_id or "").strip()
 
 
+# ---------------------------------------------------------------------------
+# Customer / contact lookup
+# ---------------------------------------------------------------------------
 
 def get_customer():
     user = frappe.session.user
@@ -82,6 +85,10 @@ def _get_contact(user, customer):
     return None
 
 
+# ---------------------------------------------------------------------------
+# Internals
+# ---------------------------------------------------------------------------
+
 @contextmanager
 def _lock(customer, order_type):
     """Ek customer + list type pe ek time me ek hi write (duplicate quotation rokne ke liye)."""
@@ -119,6 +126,7 @@ def _row(item_code, qty, price=None):
 
     row = {"item_code": item_code, "qty": min(max(flt(qty) or 1, 1), MAX_QTY)}
 
+    # Price server se aata hai, browser se nahi. Server rate 0 ho to hi fallback price.
     rate = flt(frappe.db.get_value("Item", item_code, "standard_rate"))
     if rate <= 0:
         rate = flt(price)
@@ -162,6 +170,7 @@ def _remove_item(customer, order_type, item_code):
     for row in rows:
         doc.remove(row)
 
+    # Last item hata to quotation delete (empty draft nahi rakhte)
     if not doc.items:
         frappe.delete_doc("Quotation", doc.name, ignore_permissions=True, force=True)
         return None
@@ -169,25 +178,61 @@ def _remove_item(customer, order_type, item_code):
     return save_doc(doc)
 
 
+def _add_unlocked(customer, order_type, item_code, qty=1, accumulate=False):
+    doc = get_open_doc(customer, order_type)
+    row = _row(item_code, qty)
+
+    if not doc:
+        return _new_doc(customer, order_type, [row]), True
+
+    existing = next((i for i in doc.items if i.item_code == item_code), None)
+    if existing:
+        if accumulate:
+            existing.qty = min(flt(existing.qty) + row["qty"], MAX_QTY)
+            save_doc(doc)
+        return doc, False
+
+    doc.append("items", row)
+    save_doc(doc)
+    return doc, False
+
+
+# ---------------------------------------------------------------------------
+# Public helpers (cart.py, wishlist.py, orders.py use these)
+# ---------------------------------------------------------------------------
+
 def add_item(customer, order_type, item_code, qty=1, accumulate=False):
     """Item add karo. Returns (doc, created)."""
     with _lock(customer, order_type):
-        doc = get_open_doc(customer, order_type)
-        row = _row(item_code, qty)
+        return _add_unlocked(customer, order_type, item_code, qty, accumulate)
 
-        if not doc:
-            return _new_doc(customer, order_type, [row]), True
 
-        existing = next((i for i in doc.items if i.item_code == item_code), None)
-        if existing:
-            if accumulate:
-                existing.qty = min(flt(existing.qty) + row["qty"], MAX_QTY)
-                save_doc(doc)
-            return doc, False
+def add_to_cart_item(customer, item_code, qty=1):
+    """
+    Cart me item add karo. Item wishlist me ho to wahan se move hota hai:
+    - wishlist me sirf yahi item + cart quotation nahi -> wishlist quotation hi cart ban jati hai
+    - warna item wishlist se nikalke cart quotation me jata hai
+    Returns (doc, created).
+    """
+    # Lock order hamesha cart -> wishlist (deadlock se bachne ke liye)
+    with _lock(customer, CART), _lock(customer, WISHLIST):
+        wish = get_open_doc(customer, WISHLIST)
+        in_wish = bool(wish) and any(i.item_code == item_code for i in wish.items)
 
-        doc.append("items", row)
-        save_doc(doc)
-        return doc, False
+        if not in_wish:
+            return _add_unlocked(customer, CART, item_code, qty, accumulate=True)
+
+        cart = get_open_doc(customer, CART)
+
+        if not cart and len(wish.items) == 1:
+            row = _row(item_code, qty)
+            wish.order_type = CART
+            wish.items[0].qty = row["qty"]
+            save_doc(wish)
+            return wish, False
+
+        _remove_item(customer, WISHLIST, item_code)
+        return _add_unlocked(customer, CART, item_code, qty, accumulate=True)
 
 
 def set_qty(customer, order_type, item_code, qty):
